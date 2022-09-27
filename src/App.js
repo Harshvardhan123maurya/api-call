@@ -1,35 +1,77 @@
-import './App.css';
-import React, { Component } from 'react';
-import Navbar from './components/layouts/Navbar';
-import Users from './components/users/Users';
-import axios from 'axios';
-import Search from './components/users/Search';
+'./components/users/Search';
+import Alert from './components/layouts/Alert';
+import About from './components/pages/About';
+import GithubState from './contexts/github/GithubState';
+import AlertState from './contexts/alert/AlertState';
+import Home from './components/pages/Home';
 
 class App extends Component {
   state = {
-    users: [],
-    loading: false
-  }
-  async componentDidMount() {
-    this.setState({
-      loading: true
-    });
-    const response = await axios.get('https://api.github.com/users')
-    this.setState({
-      loading: false,
-      users: response.data
-    })
+    user: {},
+    alert: null,
   }
 
+
+  /**
+   * Initializes Alert state
+   * @param {*} alert 
+   */
+  setAlert = (alert) => {
+    this.setState({alert: {
+      msg: alert.msg,
+      type: alert.type
+    }});
+    setTimeout(() => {
+      this.setState({alert: null});
+    }, 3000);
+  }
+
+
+  /**
+   * Renders App component (lifecycle method)
+   * @returns 
+   */
   render() {
+    const {alert} = this.state;
     return (
-      <div className='App'>
-        <Navbar title='Git Finder' icon='fab fa-github' />
-        <div className='container'>
-          <Search />
-          <Users userData={this.state.users} loading={this.state.loading} />
+      <GithubState>
+      <Router>
+        <div className='App'>
+          <Navbar title='Git Finder' icon='fab fa-github' />
+          <div className='container'>
+            <Alert alert={alert}/>
+            <Routes>
+
+              <Route exact path='/' element={<Fragment>
+                <Search setAlert={this.setAlert}/>
+                <Users/>
+              </Fragment>}>
+              </Route>
+
+              <Route path='/about' element={<About/>}>
+              </Route>
+
+            </Routes>
+          </div>
         </div>
-      </div>
+      </Router>
+        <AlertState>
+          <Router>
+            <div className='App'>
+              <Navbar title='Git Finder' icon='fab fa-github' />
+              <div className='container'>
+                <Alert/>
+                <Routes>
+                  <Route exact path='/' element={<Home />}>
+                  </Route>
+                  <Route path='/about' element={<About/>}>
+                  </Route>
+                </Routes>
+              </div>
+            </div>
+          </Router>
+       </AlertState>
+      </GithubState>
     );
   }
 }
